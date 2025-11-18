@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { login, getCurrentUser } from "../api/auth";
-import type { MeUser } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [userInfo, setUserInfo] = useState<MeUser | null>(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -14,13 +12,11 @@ export default function Login() {
     e.preventDefault();
     try {
       await login(username, password);
-      const me = await getCurrentUser();
-      setUserInfo(me);
+      await getCurrentUser();   // validation only
       setError("");
 
-      // ✅ Redirect to products page
+      // Redirect to product listing
       navigate("/products");
-
     } catch {
       setError("Invalid credentials, please try again.");
     }
