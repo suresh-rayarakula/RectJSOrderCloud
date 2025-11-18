@@ -4,7 +4,10 @@ const baseUrl = import.meta.env.VITE_ORDERCLOUD_API_URL;
 const clientId = import.meta.env.VITE_ORDERCLOUD_CLIENT_ID;
 const BUYER_ID = "react_buyers"; // Replace with dynamic fetch if needed
 
-export async function login(username: string, password: string): Promise<string> {
+export async function login(
+  username: string,
+  password: string
+): Promise<string> {
   const data = new URLSearchParams();
   data.append("grant_type", "password");
   data.append("client_id", clientId);
@@ -37,7 +40,9 @@ export interface MeUser {
   LastName?: string;
   Email?: string;
   CompanyID?: string;
-  Locale?: string | { ID: string; Currency: string; Language: string; OwnerID: string };
+  Locale?:
+    | string
+    | { ID: string; Currency: string; Language: string; OwnerID: string };
 }
 
 export async function getCurrentUser(): Promise<MeUser | null> {
@@ -52,7 +57,10 @@ export async function getCurrentUser(): Promise<MeUser | null> {
       headers: { Authorization: `Bearer ${token}` },
     });
     const locale = response.data.Locale;
-    console.log("Current user locale:", typeof locale === "object" ? locale : { ID: locale });
+    console.log(
+      "Current user locale:",
+      typeof locale === "object" ? locale : { ID: locale }
+    );
     return response.data;
   } catch (err: any) {
     console.error("Failed to get current user:", err.response?.data);
@@ -81,11 +89,18 @@ export async function setUserLocale(locale: string): Promise<void> {
       );
       console.log(`User locale updated to ${locale}`);
     } catch (err: any) {
-      console.error("Failed to update user locale:", err.response?.data || err.message);
+      console.error(
+        "Failed to update user locale:",
+        err.response?.data || err.message
+      );
       if (err.response?.status === 400) {
-        console.warn("400 Bad Request: Locale update invalid or unnecessary. Using inherited locale.");
+        console.warn(
+          "400 Bad Request: Locale update invalid or unnecessary. Using inherited locale."
+        );
       } else if (err.response?.status === 403) {
-        console.warn("403 Forbidden: Admin role required. Using inherited locale.");
+        console.warn(
+          "403 Forbidden: Admin role required. Using inherited locale."
+        );
       } else if (err.response?.status === 404) {
         console.warn("404: Check buyer ID or user ID.");
       }
@@ -96,29 +111,11 @@ export async function setUserLocale(locale: string): Promise<void> {
   }
 }
 
-// Set buyer locale (requires admin access)
-// export async function setBuyerLocale(buyerId: string, locale: string): Promise<void> {
-//   const token = getToken();
-//   if (!token) throw new Error("No token available");
-
-//   try {
-//     await axios.patch(
-//       `${baseUrl}/v1/buyers/${buyerId}`,
-//       { Locale: locale },
-//       { headers: { Authorization: `Bearer ${token}` } }
-//     );
-//     console.log(`Buyer ${buyerId} locale updated to ${locale}`);
-//   } catch (err: any) {
-//     console.error("Failed to update buyer locale:", err.response?.data || err.message);
-//     if (err.response?.status === 403) {
-//       console.warn("403: Admin access required for buyer locale update");
-//     }
-//     throw new Error("Buyer locale update failed: Check permissions.");
-//   }
-// }
-
 // Assign locale via locale assignments (admin only, recommended for inheritance)
-export async function assignLocaleToBuyer(localeId: string, buyerId: string = BUYER_ID): Promise<void> {
+export async function assignLocaleToBuyer(
+  localeId: string,
+  buyerId: string = BUYER_ID
+): Promise<void> {
   const token = getToken();
   if (!token) throw new Error("No token available");
 
@@ -133,8 +130,13 @@ export async function assignLocaleToBuyer(localeId: string, buyerId: string = BU
     );
     console.log(`Locale ${localeId} assigned to buyer ${buyerId}`);
   } catch (err: any) {
-    console.error("Failed to assign locale:", err.response?.data || err.message);
-    throw new Error("Locale assignment failed: Admin access or valid LocaleID required.");
+    console.error(
+      "Failed to assign locale:",
+      err.response?.data || err.message
+    );
+    throw new Error(
+      "Locale assignment failed: Admin access or valid LocaleID required."
+    );
   }
 }
 
@@ -153,4 +155,11 @@ export async function getLocales(): Promise<any> {
     console.error("Failed to fetch locales:", err.response?.data);
     throw new Error("Failed to fetch locales: Check permissions.");
   }
+}
+// Add this function to auth.ts
+export function logout(): void {
+  localStorage.removeItem("access_token");
+  console.log("User logged out – token removed");
+  // Optional: clear any other stored data
+  // localStorage.clear();
 }

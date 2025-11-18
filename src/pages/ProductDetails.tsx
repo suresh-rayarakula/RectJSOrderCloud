@@ -43,7 +43,7 @@ export default function ProductDetails() {
   try {
     const order = await getOrCreateOrder();
     await addLineItem(order.ID, product.ID);
-    addToCart({ id: product.ID, name: product.Name, qty: 1 });
+    addToCart(product.ID, product.Name, 1);
     alert(`${product.Name} added to cart!`);
   } catch (err: any) {
     // Existing error handling

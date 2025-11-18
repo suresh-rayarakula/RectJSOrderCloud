@@ -1,40 +1,32 @@
-// src/pages/Products.tsx (or wherever your file is)
+// src/pages/Products.tsx
 import { useEffect, useState } from "react";
 import { listProducts, type Product } from "../api/products";
-import { getCurrentUser, type MeUser } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { getOrCreateOrder, addLineItem, listLineItems } from "../api/cart";
+import { getOrCreateOrder, addLineItem } from "../api/cart";
+import { useCart } from "../context/CartContext"; // ← This is the key!
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [user, setUser] = useState<MeUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
-  const [cartCount, setCartCount] = useState(0);
 
   const navigate = useNavigate();
+  const { addToCart } = useCart(); // ← Use global cart!
 
-  // Fetch products + user
   useEffect(() => {
-    async function fetchData() {
+    async function fetchProducts() {
       try {
-        const [data, userData] = await Promise.all([listProducts(), getCurrentUser()]);
+        const data = await listProducts();
         setProducts(data);
-        setUser(userData);
-
-        // Load cart count on mount
-        const order = await getOrCreateOrder();
-        const items = await listLineItems(order.ID);
-        const totalItems = items.reduce((sum: number, li: any) => sum + li.Quantity, 0);
-        setCartCount(totalItems);
       } catch (err) {
-        console.error("Initial load failed:", err);
+        console.error("Failed to load products:", err);
+        setMessage({ text: "Failed to load products", type: "error" });
       } finally {
         setLoading(false);
       }
     }
-    fetchData();
+    fetchProducts();
   }, []);
 
   // Auto-hide toast
@@ -49,26 +41,19 @@ export default function Products() {
       const order = await getOrCreateOrder();
       await addLineItem(order.ID, productID);
 
-      // Update cart count
-      setCartCount(prev => prev + 1);
+      // Update global cart context (this updates header badge instantly!)
+      addToCart(productID, productName);
 
-      // Show success message
       setMessage({
         text: `${productName} added to cart!`,
-        type: "success"
+        type: "success",
       });
     } catch (err: any) {
       setMessage({
         text: "Failed to add to cart",
-        type: "error"
+        type: "error",
       });
     }
-  }
-
-  function logout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("oc_active_order_id");
-    navigate("/");
   }
 
   if (loading) {
@@ -86,7 +71,7 @@ export default function Products() {
         <div
           style={{
             position: "fixed",
-            top: 20,
+            top: 80,
             right: 20,
             background: message.type === "success" ? "#1DB954" : "#d32f2f",
             color: "white",
@@ -96,110 +81,79 @@ export default function Products() {
             fontSize: "15px",
             boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
             zIndex: 9999,
-            minWidth: "240px",
-            textAlign: "center",
             animation: "slideInRight 0.4s ease",
           }}
         >
-          {message.type === "success" ? "Success" : "Error"} {message.text}
+          {message.text}
         </div>
       )}
 
-      <div style={{ padding: "30px", maxWidth: "1400px", margin: "0 auto" }}>
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "2rem",
-            paddingBottom: "1rem",
-            borderBottom: "1px solid rgba(255,255,255,0.1)",
-          }}
-        >
-          <div>
-            {user ? (
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                <span style={{ fontSize: "1.1rem" }}>
-                  Hello, <strong>{user.FirstName} {user.LastName}</strong>
-                </span>
-                <button onClick={logout}>Logout</button>
-              </div>
-            ) : (
-              <button onClick={logout}>Logout</button>
-            )}
-          </div>
+      <div style={{ padding: "2rem", maxWidth: "1400px", margin: "0 auto" }}>
+        <h2 style={{ fontSize: "2rem", marginBottom: "2rem" }}>All Products</h2>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <Link to="/cart" style={{ textDecoration: "none", color: "#646cff", fontWeight: 500 }}>
-              Cart ({cartCount})
-            </Link>
-            <br></br>
-          </div>
-         
-        </div>
-
-        {/* Product Grid */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: "24px",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+            gap: "28px",
           }}
         >
           {products.map((p) => (
             <div
               key={p.ID}
               style={{
-                border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: "12px",
-                padding: "20px",
-                backgroundColor: "rgba(255,255,255,0.05)",
-                transition: "transform 0.2s, box-shadow 0.2s",
+                border: "1px solid #333",
+                borderRadius: "16px",
+                padding: "24px",
+                backgroundColor: "#141414",
+                transition: "all 0.3s ease",
+                cursor: "pointer",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.boxShadow = "0 10px 25px rgba(0,0,0,0.2)";
+                e.currentTarget.style.transform = "translateY(-8px)";
+                e.currentTarget.style.boxShadow = "0 20px 40px rgba(100, 108, 255, 0.2)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "translateY(0)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             >
-              <h3 style={{ margin: "0 0 12px 0", fontSize: "1.4rem" }}>
+              <h3 style={{ margin: "0 0 12px 0", fontSize: "1.5rem", color: "white" }}>
                 {p.Name}
               </h3>
 
-              <p style={{ color: "#aaa", fontSize: "0.95rem", margin: "8px 0 16px" }}>
-                {p.Description || "No description"}
+              <p style={{ color: "#aaa", margin: "12px 0", lineHeight: 1.5 }}>
+                {p.Description || "Premium quality product"}
               </p>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
                 <Link
                   to={`/products/${p.ID}`}
                   style={{
                     color: "#646cff",
                     textDecoration: "none",
-                    fontWeight: 500,
+                    fontWeight: 600,
+                    fontSize: "15px",
                   }}
                 >
                   See details →
                 </Link>
 
                 <button
-                  onClick={() => handleAddToCart(p.ID, p.Name || "Item")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(p.ID, p.Name || "Item");
+                  }}
                   style={{
-                    backgroundColor: "#646cff",
+                    background: "linear-gradient(135deg, #646cff, #535bf2)",
                     color: "white",
                     border: "none",
-                    padding: "12px",
-                    borderRadius: "8px",
+                    padding: "14px",
+                    borderRadius: "12px",
                     fontWeight: "600",
                     cursor: "pointer",
-                    transition: "background 0.2s",
+                    fontSize: "16px",
                   }}
-                  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#535bf2")}
-                  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#646cff")}
                 >
                   Add to Cart
                 </button>
@@ -209,17 +163,10 @@ export default function Products() {
         </div>
       </div>
 
-      {/* CSS Animations */}
       <style>{`
         @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
         }
       `}</style>
     </>
