@@ -25,29 +25,48 @@ export default function Orders() {
         <p>You don’t have any past orders.</p>
       )}
 
-      {orders.map((order) => (
-        <div
-          key={order.ID}
-          style={{
-            border: "1px solid #ccc",
-            padding: 15,
-            borderRadius: 8,
-            marginBottom: 12,
-          }}
-        >
-          <h4>Order #{order.ID}</h4>
-          <p>Status: {order.Status}</p>
-          <p>Total: ${order.Total?.toFixed(2) || "0.00"}</p>
-          <p>Created: {(new Date(order.DateCreated)).toLocaleString()}</p>
-
-          <Link
-            to={`/orders/${order.ID}`}
-            style={{ color: "#0078ff" }}
-          >
-            View Details →
-          </Link>
-        </div>
-      ))}
+      {orders.length > 0 && (
+        <table style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          marginTop: "18px",
+          background: "#181828",
+          color: "white",
+          borderRadius: "10px",
+          overflow: "hidden"
+        }}>
+          <thead>
+            <tr style={{ background: "#232344" }}>
+              <th style={{ padding: "14px", borderBottom: "2px solid #353569", textAlign: "left" }}>Order #</th>
+              <th style={{ padding: "14px", borderBottom: "2px solid #353569", textAlign: "left" }}>Status</th>
+              <th style={{ padding: "14px", borderBottom: "2px solid #353569", textAlign: "right" }}>Total</th>
+              <th style={{ padding: "14px", borderBottom: "2px solid #353569", textAlign: "left" }}>Created</th>
+              <th style={{ padding: "14px", borderBottom: "2px solid #353569", textAlign: "left" }}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order.ID} style={{ borderBottom: "1px solid #29294c" }}>
+                <td style={{ padding: "12px" }}>{order.ID}</td>
+                <td style={{ padding: "12px" }}>{order.Status}</td>
+                <td style={{ padding: "12px", textAlign: "right" }}>${order.Total?.toFixed(2) || "0.00"}</td>
+                <td style={{ padding: "12px" }}>{(new Date(order.DateCreated)).toLocaleString()}</td>
+                <td style={{ padding: "12px" }}>
+                  <Link
+                    to={`/orders/${order.ID}`}
+                    style={{
+                      color: "#7a7fff",
+                      textDecoration: "underline"
+                    }}
+                  >
+                    View Details →
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

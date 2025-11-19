@@ -157,9 +157,15 @@ export async function getLocales(): Promise<any> {
   }
 }
 // Add this function to auth.ts
-export function logout(): void {
+export function logout(navigate: (path: string) => void): void {
+  // Clear token
   localStorage.removeItem("access_token");
-  console.log("User logged out – token removed");
-  // Optional: clear any other stored data
-  // localStorage.clear();
+  
+  // Optional: Clear active order too (recommended!)
+  localStorage.removeItem("oc_active_order_id");
+
+  console.log("User logged out – token and order cleared");
+
+  // Navigate to home page
+  navigate("/");
 }

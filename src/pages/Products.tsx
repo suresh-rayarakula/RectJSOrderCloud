@@ -1,18 +1,16 @@
 // src/pages/Products.tsx
 import { useEffect, useState } from "react";
 import { listProducts, type Product } from "../api/products";
-import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { getOrCreateOrder, addLineItem } from "../api/cart";
-import { useCart } from "../context/CartContext"; // ← This is the key!
+import { useCart } from "../context/CartContext";
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
-  const navigate = useNavigate();
-  const { addToCart } = useCart(); // ← Use global cart!
+  const { addToCart } = useCart();
 
   useEffect(() => {
     async function fetchProducts() {
@@ -20,7 +18,6 @@ export default function Products() {
         const data = await listProducts();
         setProducts(data);
       } catch (err) {
-        console.error("Failed to load products:", err);
         setMessage({ text: "Failed to load products", type: "error" });
       } finally {
         setLoading(false);
@@ -40,15 +37,13 @@ export default function Products() {
     try {
       const order = await getOrCreateOrder();
       await addLineItem(order.ID, productID);
-
-      // Update global cart context (this updates header badge instantly!)
       addToCart(productID, productName);
 
       setMessage({
         text: `${productName} added to cart!`,
         type: "success",
       });
-    } catch (err: any) {
+    } catch (err) {
       setMessage({
         text: "Failed to add to cart",
         type: "error",
@@ -58,7 +53,7 @@ export default function Products() {
 
   if (loading) {
     return (
-      <div style={{ padding: 40, textAlign: "center", fontSize: "1.5rem" }}>
+      <div style={{ padding: "4rem", textAlign: "center", fontSize: "1.6rem", color: "#aaa" }}>
         Loading products...
       </div>
     );
@@ -66,7 +61,7 @@ export default function Products() {
 
   return (
     <>
-      {/* Toast Notification */}
+      {/* Toast */}
       {message && (
         <div
           style={{
@@ -75,11 +70,11 @@ export default function Products() {
             right: 20,
             background: message.type === "success" ? "#1DB954" : "#d32f2f",
             color: "white",
-            padding: "14px 24px",
+            padding: "14px 28px",
             borderRadius: "12px",
             fontWeight: "600",
             fontSize: "15px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
             zIndex: 9999,
             animation: "slideInRight 0.4s ease",
           }}
@@ -88,52 +83,58 @@ export default function Products() {
         </div>
       )}
 
-      <div style={{ padding: "2rem", maxWidth: "1400px", margin: "0 auto" }}>
-        <h2 style={{ fontSize: "2rem", marginBottom: "2rem" }}>All Products</h2>
+      <div style={{ padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
+        <h2 style={{ fontSize: "2.4rem", marginBottom: "3rem", textAlign: "center", color: "#646cff" }}>
+          All Products
+        </h2>
 
+        {/* 2-Column Grid */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-            gap: "28px",
+            gridTemplateColumns: "repeat(2, 1fr)",   // ← Exactly 2 columns
+            gap: "2.5rem",
+            padding: "0 1rem",
           }}
+          className="products-grid"
         >
           {products.map((p) => (
             <div
               key={p.ID}
               style={{
                 border: "1px solid #333",
-                borderRadius: "16px",
-                padding: "24px",
+                borderRadius: "18px",
+                padding: "28px",
                 backgroundColor: "#141414",
                 transition: "all 0.3s ease",
                 cursor: "pointer",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-8px)";
-                e.currentTarget.style.boxShadow = "0 20px 40px rgba(100, 108, 255, 0.2)";
+                e.currentTarget.style.transform = "translateY(-10px)";
+                e.currentTarget.style.boxShadow = "0 20px 40px rgba(100, 108, 255, 0.25)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.boxShadow = "0 4px 15px rgba(0,0,0,0.3)";
               }}
             >
-              <h3 style={{ margin: "0 0 12px 0", fontSize: "1.5rem", color: "white" }}>
+              <h3 style={{ margin: "0 0 14px 0", fontSize: "1.7rem", color: "white" }}>
                 {p.Name}
               </h3>
 
-              <p style={{ color: "#aaa", margin: "12px 0", lineHeight: 1.5 }}>
+              <p style={{ color: "#bbb", margin: "14px 0", lineHeight: "1.6", fontSize: "1rem" }}>
                 {p.Description || "Premium quality product"}
               </p>
 
-              <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "14px" }}>
                 <Link
                   to={`/products/${p.ID}`}
                   style={{
                     color: "#646cff",
                     textDecoration: "none",
-                    fontWeight: 600,
-                    fontSize: "15px",
+                    fontWeight: "600",
+                    fontSize: "1rem",
                   }}
                 >
                   See details →
@@ -148,12 +149,15 @@ export default function Products() {
                     background: "linear-gradient(135deg, #646cff, #535bf2)",
                     color: "white",
                     border: "none",
-                    padding: "14px",
-                    borderRadius: "12px",
+                    padding: "16px",
+                    borderRadius: "14px",
                     fontWeight: "600",
                     cursor: "pointer",
-                    fontSize: "16px",
+                    fontSize: "1.1rem",
+                    transition: "all 0.3s ease",
                   }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
                 >
                   Add to Cart
                 </button>
@@ -163,7 +167,14 @@ export default function Products() {
         </div>
       </div>
 
+      {/* Responsive fallback for mobile */}
       <style>{`
+        @media (max-width: 768px) {
+          .products-grid {
+            grid-template-columns: 1fr !important;
+            padding: 0 1rem;
+          }
+        }
         @keyframes slideInRight {
           from { transform: translateX(100%); opacity: 0; }
           to { transform: translateX(0); opacity: 1; }

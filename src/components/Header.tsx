@@ -1,9 +1,10 @@
-// src/components/Header.tsx
 import { Link, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { logout } from "../api/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
+  const navigate = useNavigate(); // ← Add this
   const { totalItems } = useCart();
   const location = useLocation();
 
@@ -12,8 +13,8 @@ export default function Header() {
   return (
     <header
       style={{
-        background: "#0f0f1aff",
-        position: "fixed",      // ← Sticks to very top
+        background: "#0f0f1a",
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
@@ -26,40 +27,41 @@ export default function Header() {
         style={{
           maxWidth: "1600px",
           margin: "0 auto",
-          padding: "1.5rem 3rem",   // ← Generous side padding
+          padding: "1rem 3rem", // ← Reduced from 1.5rem → smaller header
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        {/* Logo - Left */}
+        {/* Logo - Smaller but still bold */}
         <Link to="/products" style={{ textDecoration: "none" }}>
-          <h3
+          <h1
             style={{
               margin: 0,
-              fontSize: "2.8rem",
-              fontWeight: "900",
-              background: "linear-gradient(90deg, #646cff, #ee4e73ff)",
+              fontSize: "2.2rem", // ← Reduced from 2.8rem
+              fontWeight: "800",
+              background: "linear-gradient(90deg, #646cff, #a78bff)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              letterSpacing: "1px",
             }}
           >
-            React OrderCloud
-          </h3>
+            OrderCloud + ReactJs
+          </h1>
         </Link>
 
-        {/* Nav Links - Right with HUGE breathing space */}
-        <nav style={{ display: "flex", alignItems: "center", gap: "5rem" }}>
+        {/* Nav Links - Perfect spacing & smaller text */}
+        <nav style={{ display: "flex", alignItems: "center", gap: "3.5rem" }}>
           <Link
             to="/products"
             style={{
               color: isActive("/products") ? "#646cff" : "#e0e0e0",
-              fontSize: "1.2rem",
+              fontSize: "1.1rem", // ← Slightly smaller
               fontWeight: "600",
               textDecoration: "none",
-              padding: "8px 0",
-              borderBottom: isActive("/products") ? "3px solid #646cff" : "3px solid transparent",
+              padding: "6px 0",
+              borderBottom: isActive("/products")
+                ? "2px solid #646cff"
+                : "2px solid transparent",
               transition: "all 0.3s ease",
             }}
           >
@@ -70,11 +72,13 @@ export default function Header() {
             to="/orders"
             style={{
               color: isActive("/orders") ? "#646cff" : "#e0e0e0",
-              fontSize: "1.2rem",
+              fontSize: "1.1rem",
               fontWeight: "600",
               textDecoration: "none",
-              padding: "8px 0",
-              borderBottom: isActive("/orders") ? "3px solid #646cff" : "3px solid transparent",
+              padding: "6px 0",
+              borderBottom: isActive("/orders")
+                ? "2px solid #646cff"
+                : "2px solid transparent",
               transition: "all 0.3s ease",
             }}
           >
@@ -86,31 +90,30 @@ export default function Header() {
             style={{
               position: "relative",
               color: "#fff",
-              fontSize: "1.3rem",
+              fontSize: "1.15rem",
               fontWeight: "600",
               textDecoration: "none",
             }}
           >
-            <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              🛒 Cart
+            <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              Cart
               {totalItems > 0 && (
                 <span
                   style={{
                     position: "absolute",
-                    top: "-14px",
-                    right: "-26px",
+                    top: "-10px",
+                    right: "-20px",
                     background: "#ff2d55",
                     color: "white",
-                    fontSize: "0.95rem",
+                    fontSize: "0.85rem",
                     fontWeight: "bold",
-                    minWidth: "30px",
-                    height: "30px",
+                    width: "22px",
+                    height: "22px",
                     borderRadius: "50%",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: "4px solid #0f0f1a",
-                    boxShadow: "0 4px 15px rgba(255,45,85,0.6)",
+                    border: "3px solid #0f0f1a",
                   }}
                 >
                   {totalItems}
@@ -120,14 +123,14 @@ export default function Header() {
           </Link>
 
           <button
-            onClick={logout}
+            onClick={() => logout(navigate)}
             style={{
               background: "transparent",
               border: "2px solid #646cff",
               color: "#646cff",
-              padding: "12px 32px",
-              borderRadius: "16px",
-              fontSize: "1.1rem",
+              padding: "8px 20px", // ← Smaller button
+              borderRadius: "12px",
+              fontSize: "1rem",
               fontWeight: "600",
               cursor: "pointer",
               transition: "all 0.3s ease",
